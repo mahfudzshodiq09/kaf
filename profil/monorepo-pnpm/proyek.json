@@ -1,0 +1,5 @@
+{
+  "app": "<app>",
+  "kode": ["apps/", "packages/"],
+  "selaluBoleh": ["apps/*/package.json", "packages/*/package.json", "pnpm-lock.yaml"]
+}

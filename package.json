@@ -1,0 +1,16 @@
+{
+  "name": "kaf",
+  "version": "2.0.0",
+  "description": "Workflow /modul v2 untuk Claude Code + OpenCode: plan → prd → build → review, persetujuan per butir, test duluan, penjaga file.",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "kaf": "bin/kaf.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs && cd inti && node --test scripts/modul/test/*.test.mjs"
+  }
+}

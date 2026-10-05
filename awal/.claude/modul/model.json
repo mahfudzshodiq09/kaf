@@ -1,0 +1,10 @@
+{
+  "router": "http://localhost:20128/v1",
+  "kunciEnv": "NINEROUTER_API_KEY",
+  "model": {
+    "gemini": "ag/gemini-3.8-flash-high",
+    "deepseek": "ds/deepseek-v4-flash"
+  },
+  "timeoutDetik": 300,
+  "maksHuruf": 400000
+}

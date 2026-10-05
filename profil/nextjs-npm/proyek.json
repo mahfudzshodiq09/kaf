@@ -1,0 +1,5 @@
+{
+  "app": "<app>",
+  "kode": ["src/", "prisma/", "tests/"],
+  "selaluBoleh": ["package.json", "package-lock.json", "bun.lock"]
+}

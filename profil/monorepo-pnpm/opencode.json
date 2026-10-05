@@ -1,0 +1,54 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "9router": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "9router (lokal)",
+      "options": {
+        "baseURL": "http://localhost:20128/v1",
+        "apiKey": "{env:NINEROUTER_API_KEY}"
+      },
+      "models": {
+        "ISI_NAMA_MODEL_DEEPSEEK": { "name": "DeepSeek (via 9router)" },
+        "ISI_NAMA_MODEL_GEMINI": { "name": "Gemini (via 9router)" }
+      }
+    }
+  },
+  "agent": {
+    "pembangun": {
+      "description": "Pembangun /modul v2: mengerjakan SATU tugas siap sampai test hijau. Tidak memutuskan apa pun.",
+      "mode": "primary",
+      "model": "9router/ISI_NAMA_MODEL_DEEPSEEK",
+      "temperature": 0.1,
+      "prompt": "{file:./.claude/modul/agen/pembangun.md}",
+      "permission": {
+        "edit": "allow",
+        "webfetch": "deny",
+        "bash": {
+          "*": "deny",
+          "pnpm lint*": "allow",
+          "pnpm typecheck*": "allow",
+          "pnpm test*": "allow",
+          "pnpm e2e*": "allow",
+          "pnpm build*": "allow",
+          "pnpm format*": "allow",
+          "pnpm --filter * lint*": "allow",
+          "pnpm --filter * typecheck*": "allow",
+          "pnpm --filter * test*": "allow",
+          "pnpm --filter * e2e*": "allow",
+          "pnpm --filter * build*": "allow",
+          "git status*": "allow",
+          "git diff*": "allow",
+          "git log*": "allow",
+          "git show*": "allow",
+          "git add *": "allow",
+          "git commit *": "allow",
+          "node scripts/modul/status.mjs *": "allow",
+          "node scripts/modul/cek.mjs *": "allow",
+          "ls*": "allow",
+          "pwd": "allow"
+        }
+      }
+    }
+  }
+}
