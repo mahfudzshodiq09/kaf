@@ -15,14 +15,19 @@ function dasar() {
     r.baca(`PLAN/${M}/tugas/01-aturan.md`).replace('(diisi Perancang Uji)', '```\nFAIL\n```'),
   );
   tulisJson(kunciPath(r.root, M), {
-    1: { 'apps/siakad/src/cuti.rules.test.ts': hashFile(join(r.root, 'apps/siakad/src/cuti.rules.test.ts')) },
+    1: {
+      'apps/siakad/src/cuti.rules.test.ts': hashFile(join(r.root, 'apps/siakad/src/cuti.rules.test.ts')),
+    },
   });
   setStatusTugas(join(r.root, `PLAN/${M}/tugas/01-aturan.md`), 'siap');
   r.commit('docs: modul latihan');
   r.g('checkout', '-q', '-b', `feat/${M}`);
   return r;
 }
-const gate = (r, env = {}) => jalankan(r.root, 'check-gate.mjs', ['main'], { env: { GITHUB_HEAD_REF: '', ...env } });
+const gate = (r, env = {}) =>
+  jalankan(r.root, 'check-gate.mjs', ['main'], {
+    env: { GITHUB_HEAD_REF: '', ...env },
+  });
 
 test('lulus: commit kode bertrailer, file milik tugas', () => {
   const r = dasar();

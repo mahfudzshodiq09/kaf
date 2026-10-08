@@ -1,4 +1,4 @@
-# /modul rilis <nnn> · Opus
+# /kaf rilis <nnn> · Opus
 
 Syarat: butir UAT sah.
 

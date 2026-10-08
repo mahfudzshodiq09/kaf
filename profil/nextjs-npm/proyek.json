@@ -1,5 +1,21 @@
 {
   "app": "<app>",
-  "kode": ["src/", "prisma/", "tests/"],
-  "selaluBoleh": ["package.json", "package-lock.json", "bun.lock"]
+  "kode": [
+    "src/",
+    "prisma/",
+    "tests/"
+  ],
+  "selaluBoleh": [
+    "package.json",
+    "package-lock.json",
+    "bun.lock"
+  ],
+  "pembangunBash": [
+    "npm run lint",
+    "npx tsc --noEmit",
+    "npm run test",
+    "npm run build",
+    "npx vitest run",
+    "npx playwright test"
+  ]
 }

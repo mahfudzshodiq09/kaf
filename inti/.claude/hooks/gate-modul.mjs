@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// Penjaga /modul v2 untuk Claude Code (PreToolUse: Edit|Write|MultiEdit|NotebookEdit|Bash).
-// Aturan ada di scripts/modul/lib.mjs (periksaFile/periksaBash) — sama dengan plugin OpenCode. Desain: docs/modul-v2/05-gate.md.
+// Penjaga /kaf v2 untuk Claude Code (PreToolUse: Edit|Write|MultiEdit|NotebookEdit|Bash).
+// Aturan ada di scripts/modul/lib.mjs (periksaFile/periksaBash). Pembangun (bangun.mjs) memakai hook yang sama
+// dengan env MODUL_PERAN=pembangun → aturan lebih ketat. Desain: docs/modul-v2/05-gate.md.
 import { readFileSync } from 'node:fs';
 
 let input = {};
@@ -23,15 +24,21 @@ try {
 } catch (e) {
   // Lib rusak/hilang: tutup rapat untuk edit kode & file penjaga, biarkan yang lain.
   const f = String(ti.file_path || ti.notebook_path || '');
-  if (/(^|\/)(apps|packages|scripts\/modul|\.claude\/hooks)\//.test(f)) tolak(`lib penjaga tidak bisa dimuat (${e.message}).`);
+  if (/(^|\/)(apps|packages|scripts\/modul|\.claude\/hooks)\//.test(f))
+    tolak(`lib penjaga tidak bisa dimuat (${e.message}).`);
   process.exit(0);
 }
 try {
+  const pembangun = process.env.MODUL_PERAN === 'pembangun';
+  if (pembangun && ['Skill', 'SlashCommand', 'Task', 'Agent', 'WebFetch', 'WebSearch'].includes(input.tool_name))
+    tolak(`pembangun tidak boleh memakai ${input.tool_name}.`);
   if (['Skill', 'SlashCommand'].includes(input.tool_name)) {
-    if (/\bmodul\b[\s\S]{0,40}\b(prd|build)\b/.test(JSON.stringify(ti)))
-      tolak('/modul prd dan /modul build sekaligus persetujuan — hanya boleh DIKETIK pemilik, tidak dipanggil AI.');
+    if (/\b(?:kaf|modul)\b[\s\S]{0,40}\b(prd|build)\b/.test(JSON.stringify(ti)))
+      tolak('/kaf prd dan /kaf build sekaligus persetujuan — hanya boleh DIKETIK pemilik, tidak dipanggil AI.');
   } else if (input.tool_name === 'Bash') {
-    const a = lib.periksaBash(root, ti.command || '', { alat: 'claude' });
+    const a = lib.periksaBash(root, ti.command || '', {
+      alat: pembangun ? 'pembangun' : 'claude',
+    });
     if (a) tolak(a);
   } else if (['Edit', 'Write', 'MultiEdit', 'NotebookEdit'].includes(input.tool_name)) {
     const f = ti.file_path || ti.notebook_path;
@@ -41,6 +48,7 @@ try {
     }
   }
 } catch (e) {
-  if (['Edit', 'Write', 'MultiEdit', 'NotebookEdit'].includes(input.tool_name)) tolak(`penjaga gagal memeriksa (${e.message}).`);
+  if (['Edit', 'Write', 'MultiEdit', 'NotebookEdit'].includes(input.tool_name))
+    tolak(`penjaga gagal memeriksa (${e.message}).`);
 }
 process.exit(0);

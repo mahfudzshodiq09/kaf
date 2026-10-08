@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// kaf — pemasang & pembaru workflow /modul v2 (sumber tunggal untuk semua project).
+// kaf — pemasang & pembaru workflow /kaf v2 (sumber tunggal untuk semua project).
 //   node <kaf>/bin/kaf.mjs install <project> [--profil monorepo-pnpm|nextjs-npm] [--app <nama>] [--tanpa-tes]
 //   node <kaf>/bin/kaf.mjs update  <project> [--paksa] [--tanpa-tes]
 //   node <kaf>/bin/kaf.mjs cek     <project...>
@@ -81,7 +81,7 @@ export function gabungSettings(target) {
     } else list.push({ matcher, hooks: [{ type: 'command', command: cmd }] });
   };
   pastikan('PreToolUse', 'Edit|Write|MultiEdit|NotebookEdit|Bash|Skill|SlashCommand', 'gate-modul.mjs');
-  pastikan('UserPromptExpansion', 'modul', 'setujui-ketik.mjs');
+  pastikan('UserPromptExpansion', 'kaf', 'setujui-ketik.mjs');
   tulisJson(p, s);
 }
 export function gabungPackage(target) {
@@ -99,16 +99,16 @@ export function gabungPackage(target) {
   return ubah;
 }
 const BLOK = (pm) => `<!-- kaf:mulai — dikelola kaf, jangan diedit di antara penanda ini -->
-## /modul (kaf ${VERSI})
+## /kaf — workflow modul (kaf ${VERSI})
 
-Fitur/modul baru lewat **\`/modul\`**: \`plan "<ide>"\` (BRD) → \`prd <nnn>\` (PRD) → \`build <nnn> [3|1-10]\` (kode) → \`review <nnn>\` → \`uat\` → \`rilis\`.
+Fitur/modul baru lewat **\`/kaf\`**: \`plan "<ide>"\` (BRD) → \`prd <nnn>\` (PRD) → \`build <nnn> [3|1-10]\` (kode) → \`review <nnn>\` → \`uat\` → \`rilis\`.
 Panduan \`docs/modul-v2/README.md\` · profil project \`.claude/modul/proyek.md\` · progres \`${pm} modul:list\`.
 
-- **Mengetik \`/modul prd\` = menyetujui BRD; mengetik \`/modul build\` = menyetujui PRD** (dicatat hook). AI tidak memanggil keduanya, tidak mengedit \`persetujuan.json\`/\`kunci-tes.json\`, tidak menjalankan \`setujui\` (R6).
+- **Mengetik \`/kaf prd\` = menyetujui BRD; mengetik \`/kaf build\` = menyetujui PRD** (dicatat hook). AI tidak memanggil keduanya, tidak mengedit \`persetujuan.json\`/\`kunci-tes.json\`, tidak menjalankan \`setujui\` (R6).
 - Keputusan bisnis hanya di \`PLAN/<modul>/03-keputusan.md\`, ditanyakan sekali (R1–R2). Hanya file milik tugas aktif yang boleh diubah; ditolak penjaga → jelaskan, jangan diakali (R7).
 - File penjaga (\`scripts/modul/\`, \`.claude/hooks/\`, \`.claude/modul/proyek.json\`, …) hanya diubah lewat \`kaf update\` atau sesi \`MODUL_PERAWATAN=1\`.
 <!-- kaf:selesai -->`;
-/** 'ganti' | 'tambah' | 'lewati' (CLAUDE.md sudah menjelaskan /modul v2 tanpa penanda). */
+/** 'ganti' | 'tambah' | 'lewati' (CLAUDE.md sudah menjelaskan /kaf v2 tanpa penanda). */
 export function gabungClaudeMd(target) {
   const p = join(target, 'CLAUDE.md');
   const pm = existsSync(join(target, 'pnpm-lock.yaml')) ? 'pnpm' : 'npm run';
@@ -118,7 +118,7 @@ export function gabungClaudeMd(target) {
     writeFileSync(p, t.replace(re, BLOK(pm)));
     return 'ganti';
   }
-  if (/\/modul`? v2|docs\/modul-v2/.test(t)) return 'lewati';
+  if (/\/(?:kaf|modul)`? v2|docs\/modul-v2/.test(t)) return 'lewati';
   writeFileSync(p, (t ? t.replace(/\s*$/, '\n\n') : '') + BLOK(pm) + '\n');
   return 'tambah';
 }
@@ -131,13 +131,19 @@ function jalankanTes(target) {
     .map((f) => join('scripts/modul/test', f));
   const env = { ...process.env };
   delete env.NODE_TEST_CONTEXT; // bila kaf dijalankan dari dalam test runner
+  delete env.MODUL_PERAWATAN; // tes penjaga harus melihat kondisi normal
   const r = spawnSync(process.execPath, ['--test', '--test-reporter=tap', ...files], {
     cwd: target,
     encoding: 'utf8',
     env,
   });
   const ambil = (k) => Number((new RegExp(`^# ${k} (\\d+)`, 'm').exec(r.stdout) || [])[1] || 0);
-  return { lulus: ambil('pass'), gagal: ambil('fail'), total: ambil('tests'), ok: r.status === 0 };
+  return {
+    lulus: ambil('pass'),
+    gagal: ambil('fail'),
+    total: ambil('tests'),
+    ok: r.status === 0,
+  };
 }
 
 // ── Perintah ─────────────────────────────────────────────────────────────────
@@ -154,7 +160,6 @@ export function install(target, { profil, app, tes = true } = {}) {
   }
   const benih = [
     ...daftarBerkas(join(KAF, 'awal')).map((r) => [join(KAF, 'awal', r), r]),
-    [join(KAF, 'profil', profil, 'opencode.json'), 'opencode.json'],
     [join(KAF, 'profil', profil, 'proyek.json'), '.claude/modul/proyek.json'],
     [join(KAF, 'profil', profil, 'proyek.md'), '.claude/modul/proyek.md'],
   ];
@@ -177,7 +182,13 @@ export function install(target, { profil, app, tes = true } = {}) {
   laporan.package = gabungPackage(target);
   laporan.claudeMd = gabungClaudeMd(target);
   const now = new Date().toISOString();
-  tulisJson(join(target, MANIFEST), { versi: VERSI, profil, dipasang: now, diperbarui: now, berkas });
+  tulisJson(join(target, MANIFEST), {
+    versi: VERSI,
+    profil,
+    dipasang: now,
+    diperbarui: now,
+    berkas,
+  });
   if (tes) laporan.tes = jalankanTes(target);
   return laporan;
 }
@@ -194,6 +205,7 @@ export function update(target, { paksa = false, tes = true } = {}) {
     dilewati: [],
     dihapus: [],
     tertahan: [],
+    gagalHapus: [],
   };
   const berkas = {};
   const inti = berkasInti(target);
@@ -220,14 +232,24 @@ export function update(target, { paksa = false, tes = true } = {}) {
     const dst = join(target, r);
     if (!existsSync(dst)) continue;
     if (hashFile(dst) === lama || paksa) {
-      rmSync(dst);
-      laporan.dihapus.push(r);
+      try {
+        rmSync(dst);
+        laporan.dihapus.push(r);
+      } catch (e) {
+        berkas[r] = lama; // dicoba lagi pada update berikutnya
+        laporan.gagalHapus.push(`${r} (${e.code || e.message})`);
+      }
     } else laporan.tertahan.push(r);
   }
   gabungSettings(target);
   laporan.package = gabungPackage(target);
   laporan.claudeMd = gabungClaudeMd(target);
-  tulisJson(join(target, MANIFEST), { ...man, versi: VERSI, diperbarui: new Date().toISOString(), berkas });
+  tulisJson(join(target, MANIFEST), {
+    ...man,
+    versi: VERSI,
+    diperbarui: new Date().toISOString(),
+    berkas,
+  });
   if (tes) laporan.tes = jalankanTes(target);
   return laporan;
 }
@@ -242,7 +264,14 @@ export function cek(target) {
     if (cur === null) hilang.push(r);
     else if (cur !== h) diubah.push(r);
   }
-  return { terpasang: true, versi: man.versi, profil: man.profil, terbaru: man.versi === VERSI, diubah, hilang };
+  return {
+    terpasang: true,
+    versi: man.versi,
+    profil: man.profil,
+    terbaru: man.versi === VERSI,
+    diubah,
+    hilang,
+  };
 }
 
 // ── CLI ──────────────────────────────────────────────────────────────────────
@@ -257,7 +286,7 @@ function cli(argv) {
     else if (sisa[i] === '--app') opsi.app = sisa[++i];
     else posisi.push(sisa[i]);
   }
-  const bantuan = `kaf ${VERSI} — workflow /modul v2
+  const bantuan = `kaf ${VERSI} — workflow /kaf v2
   kaf install <project> [--profil monorepo-pnpm|nextjs-npm] [--app <nama>] [--tanpa-tes]
   kaf update  <project> [--paksa] [--tanpa-tes]
   kaf cek     <project...>`;
@@ -265,14 +294,14 @@ function cli(argv) {
     console.log(bantuan);
     process.exit(perintah ? 1 : 0);
   }
-  if ((process.env.CLAUDECODE || process.env.OPENCODE) && perintah !== 'cek' && process.env.MODUL_PERAWATAN !== '1') {
+  if (process.env.CLAUDECODE && perintah !== 'cek' && process.env.MODUL_PERAWATAN !== '1') {
     console.error(
       'Ditolak: kaf install/update mengganti file penjaga — jalankan sendiri di terminal Anda (atau MODUL_PERAWATAN=1).',
     );
     process.exit(1);
   }
   const tesTeks = (t) =>
-    t ? `\n  tes /modul: ${t.lulus}/${t.total} lulus${t.gagal ? ` — ❌ ${t.gagal} GAGAL` : ''}` : '';
+    t ? `\n  tes /kaf: ${t.lulus}/${t.total} lulus${t.gagal ? ` — ❌ ${t.gagal} GAGAL` : ''}` : '';
   let gagal = false;
   for (const p of posisi) {
     const target = resolve(p);
@@ -282,8 +311,8 @@ function cli(argv) {
         console.log(
           `✅ kaf ${VERSI} terpasang di ${target} (profil ${l.profil})\n  inti: ${l.inti} berkas` +
             `\n  awal (baru): ${l.awal.join(', ') || '–'}\n  CLAUDE.md: ${l.claudeMd} · package.json: ${l.package ? 'skrip modul:* ditambah' : 'tetap'}${tesTeks(l.tes)}` +
-            (l.awal.some((r) => r.includes('proyek.') || r === 'opencode.json')
-              ? '\n  ➜ lengkapi .claude/modul/proyek.md, model.json, dan nama model di opencode.json'
+            (l.awal.some((r) => r.includes('proyek.'))
+              ? '\n  ➜ lengkapi .claude/modul/proyek.md dan nama model 9router di .claude/modul/model.json, lalu cek: node scripts/modul/bangun.mjs --cek'
               : ''),
         );
         gagal ||= l.tes && !l.tes.ok;
@@ -296,6 +325,9 @@ function cli(argv) {
               : '') +
             (l.tertahan.length
               ? `\n  ⚠️  sudah tidak dipakai tapi diubah lokal, tidak dihapus: ${l.tertahan.join(', ')}`
+              : '') +
+            (l.gagalHapus.length
+              ? `\n  ⚠️  sudah tidak dipakai tapi GAGAL dihapus — hapus manual: ${l.gagalHapus.join(', ')}`
               : '') +
             `\n  CLAUDE.md: ${l.claudeMd}${tesTeks(l.tes)}`,
         );

@@ -1,5 +1,5 @@
-# Gerbang workflow /modul v2 (GIT-05). Jadikan "required check" di branch protection main.
-# Label PR: "non-modul" (hotfix/refactor lewat /ecc:orch-*), "perawatan-modul" (mengubah penjaga /modul).
+# Gerbang workflow /kaf v2 (GIT-05). Jadikan "required check" di branch protection main.
+# Label PR: "non-modul" (hotfix/refactor lewat /ecc:orch-*), "perawatan-modul" (mengubah penjaga /kaf).
 name: modul-gate
 on:
   pull_request:
@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-      - name: Test script /modul
+      - name: Test script /kaf
         run: node --test scripts/modul/test/*.test.mjs
       - name: Gerbang modul (per commit)
         env:

@@ -13,11 +13,19 @@ const hook = (file, root, payload) =>
     env: { ...process.env, CLAUDE_PROJECT_DIR: root },
   });
 
-test('UserPromptExpansion "/modul prd 900" menyetujui K terisi (berbagai bentuk input)', () => {
+test('UserPromptExpansion "/kaf prd 900" menyetujui K terisi (berbagai bentuk input)', () => {
   for (const payload of [
-    { hook_event_name: 'UserPromptExpansion', prompt: '/modul prd 900' },
-    { hook_event_name: 'UserPromptExpansion', command_name: 'modul', arguments: 'prd 900' },
-    { hook_event_name: 'UserPromptExpansion', command: '/modul', args: ['prd', '900'] },
+    { hook_event_name: 'UserPromptExpansion', prompt: '/kaf prd 900' },
+    {
+      hook_event_name: 'UserPromptExpansion',
+      command_name: 'kaf',
+      arguments: 'prd 900',
+    },
+    {
+      hook_event_name: 'UserPromptExpansion',
+      command: '/kaf',
+      args: ['prd', '900'],
+    },
   ]) {
     const r = repoBaru();
     modulLatihan(r);
@@ -31,21 +39,33 @@ test('UserPromptExpansion "/modul prd 900" menyetujui K terisi (berbagai bentuk 
   }
 });
 
-test('"/modul build 900 1-2" menyetujui DATA & KONTRAK; perintah lain & UserPromptSubmit tidak menyetujui apa pun', () => {
+test('"/kaf build 900 1-2" menyetujui DATA & KONTRAK; perintah lain & UserPromptSubmit tidak menyetujui apa pun', () => {
   const r = repoBaru();
   modulLatihan(r);
   assert.equal(
-    hook('setujui-ketik.mjs', r.root, { hook_event_name: 'UserPromptSubmit', prompt: '/modul build 900' }).stdout,
+    hook('setujui-ketik.mjs', r.root, {
+      hook_event_name: 'UserPromptSubmit',
+      prompt: '/kaf build 900',
+    }).stdout,
     '',
   );
   assert.equal(
-    hook('setujui-ketik.mjs', r.root, { hook_event_name: 'UserPromptExpansion', prompt: '/modul review 900' }).stdout,
+    hook('setujui-ketik.mjs', r.root, {
+      hook_event_name: 'UserPromptExpansion',
+      prompt: '/kaf review 900',
+    }).stdout,
     '',
   );
   assert.deepEqual(bacaPersetujuan(r.root, M), {});
-  hook('setujui-ketik.mjs', r.root, { hook_event_name: 'UserPromptExpansion', prompt: '/modul build 900 1-2' });
+  hook('setujui-ketik.mjs', r.root, {
+    hook_event_name: 'UserPromptExpansion',
+    prompt: '/kaf build 900 1-2',
+  });
   assert.deepEqual(Object.keys(bacaPersetujuan(r.root, M)).sort(), ['DATA', 'K1', 'K2', 'KONTRAK']);
-  const salah = hook('setujui-ketik.mjs', r.root, { hook_event_name: 'UserPromptExpansion', prompt: '/modul prd 777' });
+  const salah = hook('setujui-ketik.mjs', r.root, {
+    hook_event_name: 'UserPromptExpansion',
+    prompt: '/kaf prd 777',
+  });
   assert.match(salah.stdout, /tidak ditemukan/);
 });
 
@@ -53,19 +73,26 @@ test('AI tidak bisa "mengetik" sendiri: tool Skill/SlashCommand & claude -p dito
   const r = repoBaru();
   modulLatihan(r);
   for (const [tool_name, tool_input] of [
-    ['SlashCommand', { command: '/modul build 900' }],
-    ['Skill', { skill: 'modul', args: 'prd 900' }],
+    ['SlashCommand', { command: '/kaf build 900' }],
+    ['Skill', { skill: 'kaf', args: 'prd 900' }],
   ]) {
     const h = hook('gate-modul.mjs', r.root, { tool_name, tool_input });
     assert.equal(h.status, 2, tool_name);
     assert.match(h.stderr, /hanya boleh DIKETIK pemilik/);
   }
   assert.equal(
-    hook('gate-modul.mjs', r.root, { tool_name: 'SlashCommand', tool_input: { command: '/modul review 900' } }).status,
+    hook('gate-modul.mjs', r.root, {
+      tool_name: 'SlashCommand',
+      tool_input: { command: '/kaf review 900' },
+    }).status,
     0,
   );
-  assert.match(periksaBash(r.root, 'claude -p "/modul build 900"') || '', /diketik pemilik/);
-  assert.equal(periksaBash(r.root, 'opencode run --agent pembangun "Mode otomatis. Kerjakan tugas 1 modul 900"'), null);
+  assert.match(periksaBash(r.root, 'claude -p "/kaf build 900"') || '', /diketik pemilik/);
+  assert.equal(
+    periksaBash(r.root, 'node scripts/modul/bangun.mjs 900 1'),
+    null,
+    'orkestrator boleh memanggil pembangun',
+  );
   assert.match(periksaBash(r.root, 'node ~/Documents/nextjs/kaf/bin/kaf.mjs update .') || '', /hanya oleh pemilik/);
   assert.equal(periksaBash(r.root, 'node ../kaf/bin/kaf.mjs cek .'), null, 'cek hanya membaca');
 });

@@ -85,4 +85,4 @@ for (const b of menunggu) {
   }
 }
 rl.close();
-console.log(`\nSelesai: ${disetujui} butir disetujui. Lanjutkan di Claude Code: /modul ${m.slice(0, 3)}`);
+console.log(`\nSelesai: ${disetujui} butir disetujui. Lanjutkan di Claude Code: /kaf ${m.slice(0, 3)}`);

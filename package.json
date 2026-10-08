@@ -1,7 +1,7 @@
 {
   "name": "kaf",
-  "version": "2.0.0",
-  "description": "Workflow /modul v2 untuk Claude Code + OpenCode: plan → prd → build → review, persetujuan per butir, test duluan, penjaga file.",
+  "version": "2.3.0",
+  "description": "Workflow /kaf v2 untuk Claude Code + 9router (Gemini/DeepSeek): plan → prd → build → review, persetujuan per butir, test duluan, penjaga file.",
   "private": true,
   "type": "module",
   "bin": {

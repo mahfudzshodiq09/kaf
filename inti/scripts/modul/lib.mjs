@@ -1,5 +1,5 @@
-// Utilitas bersama /modul v2 (tanpa dependency). Desain: docs/modul-v2/.
-// Dipakai oleh: .claude/hooks/gate-modul.mjs, .opencode/plugins/gate-modul.js, scripts/modul/*.mjs
+// Utilitas bersama /kaf v2 (tanpa dependency). Desain: docs/modul-v2/.
+// Dipakai oleh: .claude/hooks/gate-modul.mjs, scripts/modul/*.mjs
 import { readFileSync, existsSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, relative, isAbsolute, dirname } from 'node:path';
 import { createHash } from 'node:crypto';
@@ -22,15 +22,18 @@ export const SELALU_BOLEH = ['apps/*/package.json', 'packages/*/package.json', '
 export function proyek(root) {
   const f = join(root, '.claude/modul/proyek.json');
   const c = existsSync(f) ? bacaJson(f) : {};
-  return { kode: c.kode?.length ? c.kode : GUARDED, selaluBoleh: c.selaluBoleh || SELALU_BOLEH, app: c.app || '' };
+  return {
+    kode: c.kode?.length ? c.kode : GUARDED,
+    selaluBoleh: c.selaluBoleh || SELALU_BOLEH,
+    app: c.app || '',
+    pembangunBash: c.pembangunBash || [],
+  };
 }
 export const diKode = (root, rel) => proyek(root).kode.some((g) => rel.startsWith(g));
 export const LINDUNG = [
   'scripts/modul/**',
   '.claude/hooks/**',
   '.claude/settings.json',
-  '.opencode/plugins/**',
-  'opencode.json',
   '.claude/modul/proyek.json',
   '.claude/modul/kaf.json',
   '.github/workflows/modul-gate.yml',
@@ -39,7 +42,15 @@ export const LINDUNG = [
 ];
 export const STATUS = ['rancang', 'tes', 'siap', 'kerja', 'selesai', 'perbaikan', 'blokir', 'batal'];
 export const STATUS_AKTIF = ['tes', 'kerja', 'perbaikan'];
-export const BATAS_BARIS = { modul: 60, konteks: 250, solusi: 120, rancangan: 400, uat: 200, rilis: 150, tugas: 100 };
+export const BATAS_BARIS = {
+  modul: 60,
+  konteks: 250,
+  solusi: 120,
+  rancangan: 400,
+  uat: 200,
+  rilis: 150,
+  tugas: 100,
+};
 
 // ── Dasar ────────────────────────────────────────────────────────────────────
 export const read = (p) => (existsSync(p) ? readFileSync(p, 'utf8') : null);
@@ -73,7 +84,11 @@ export function bacaJson(path) {
   }
 }
 export function git(root, args) {
-  return execFileSync('git', args, { cwd: root, stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 256 * 1024 * 1024 })
+  return execFileSync('git', args, {
+    cwd: root,
+    stdio: ['ignore', 'pipe', 'pipe'],
+    maxBuffer: 256 * 1024 * 1024,
+  })
     .toString()
     .trim();
 }
@@ -199,14 +214,28 @@ export function butirModul(root, m) {
     ['KONTRAK', 'Kontrak'],
   ]) {
     const b = bagian(rancangan, judul);
-    if (b !== null) out.set(id, { id, jenis: 'bagian', hash: sha(b), tunda: !b || /⏳/.test(b), teks: b });
+    if (b !== null)
+      out.set(id, {
+        id,
+        jenis: 'bagian',
+        hash: sha(b),
+        tunda: !b || /⏳/.test(b),
+        teks: b,
+      });
   }
   for (const [id, f] of [
     ['UAT', DOK.uat],
     ['RILIS', DOK.rilis],
   ]) {
     const t = read(join(d, f));
-    if (t !== null) out.set(id, { id, jenis: 'dokumen', hash: hashDokumen(t), tunda: /⏳/.test(t), teks: t });
+    if (t !== null)
+      out.set(id, {
+        id,
+        jenis: 'dokumen',
+        hash: hashDokumen(t),
+        tunda: /⏳/.test(t),
+        teks: t,
+      });
   }
   return out;
 }
@@ -337,19 +366,19 @@ export function tesTerkunci(root, m) {
 // ── Penjaga ──────────────────────────────────────────────────────────────────
 /**
  * Boleh mengubah file ini? null = boleh, string = alasan ditolak.
- * Dipakai hook Claude Code, plugin OpenCode, dan periksaBash. Aturan: docs/modul-v2/05-gate.md.
+ * Dipakai hook Claude Code (orkestrator & pembangun) dan periksaBash. Aturan: docs/modul-v2/05-gate.md.
  */
 export function periksaFile(root, file, { perawatan = process.env.MODUL_PERAWATAN === '1' } = {}) {
   const rel = relPath(root, file);
   if (matchesAny(rel, LINDUNG))
     return perawatan
       ? null
-      : `${rel} adalah file penjaga /modul. Hanya boleh diubah saat pemilik membuka tool dengan MODUL_PERAWATAN=1.`;
+      : `${rel} adalah file penjaga /kaf. Hanya boleh diubah saat pemilik membuka tool dengan MODUL_PERAWATAN=1.`;
   if (!diKode(root, rel)) return null;
   const m = activeModule(root);
   if (!m) return null; // branch non-modul → CI meminta label "non-modul"
   if (!existsSync(moduleDir(root, m))) return `branch merujuk modul ${m} tetapi PLAN/${m}/ tidak ada.`;
-  if (!isV2(root, m)) return `${m} memakai /modul v1 yang sudah diarsipkan. Buat modul v2 atau pakai branch non-modul.`;
+  if (!isV2(root, m)) return `${m} memakai /kaf v1 yang sudah diarsipkan. Buat modul v2 atau pakai branch non-modul.`;
   const tugas = bacaTugas(root, m);
   const aktif = tugasAktif(tugas);
   if (aktif.length !== 1)
@@ -357,7 +386,7 @@ export function periksaFile(root, file, { perawatan = process.env.MODUL_PERAWATA
   const t = aktif[0];
   const c = cekTugas(root, m, t);
   if (!c.ok)
-    return `${m}: tugas ${t.no} belum sah — ${c.alasan.join('; ')}. Pemilik menyetujui dengan mengetik /modul build ${m.slice(0, 3)} (atau node scripts/modul/setujui.mjs ${m.slice(0, 3)}).`;
+    return `${m}: tugas ${t.no} belum sah — ${c.alasan.join('; ')}. Pemilik menyetujui dengan mengetik /kaf build ${m.slice(0, 3)} (atau node scripts/modul/setujui.mjs ${m.slice(0, 3)}).`;
   if (t.status === 'tes')
     return matchesAny(rel, t.tes) || matchesAny(rel, t.file)
       ? null
@@ -375,7 +404,7 @@ const API_TULIS = /writeFile|appendFile|unlinkSync|renameSync|rmSync|cpSync|copy
 
 /**
  * Perintah Bash boleh? null = boleh. Penghalang untuk agent ceroboh (bukan penyerang); CI tetap penjaga akhir.
- * alat: 'claude' | 'opencode' (pembangun; lebih ketat).
+ * alat: 'claude' | 'pembangun' (DeepSeek lewat scripts/modul/bangun.mjs; lebih ketat).
  */
 export function periksaBash(root, command, { alat = 'claude', perawatan = process.env.MODUL_PERAWATAN === '1' } = {}) {
   const c = command || '';
@@ -384,10 +413,15 @@ export function periksaBash(root, command, { alat = 'claude', perawatan = proces
   if (/--no-verify\b/.test(c)) return '--no-verify dilarang (melewati pengecekan commit).';
   if (!perawatan && /\bkaf(\.mjs)?\s+(install|update)\b/.test(c))
     return 'memasang/memperbarui kaf mengganti file penjaga — hanya oleh pemilik di terminalnya (atau MODUL_PERAWATAN=1).';
-  if (/\bclaude\b[\s\S]*\/modul\s+(prd|build)\b/.test(c))
-    return '/modul prd dan /modul build sekaligus persetujuan — hanya boleh diketik pemilik, tidak dijalankan lewat Bash.';
-  if (alat === 'opencode' && /kunci-tes|scripts\/modul\/review|--buka\b/.test(c))
-    return 'pembangun tidak boleh mengunci/membuka test atau memasang cap review.';
+  if (/\bclaude\b[\s\S]*\/(?:kaf|modul)\s+(prd|build)\b/.test(c))
+    return '/kaf prd dan /kaf build sekaligus persetujuan — hanya boleh diketik pemilik, tidak dijalankan lewat Bash.';
+  if (alat === 'pembangun') {
+    if (/kunci-tes|scripts\/modul\/(review|bangun)|--buka\b/.test(c))
+      return 'pembangun tidak boleh mengunci/membuka test, memasang cap review, atau memanggil pembangun lain.';
+    if (/(^|[;&|(\s])(claude|opencode)(\s|$)/.test(c)) return 'pembangun tidak boleh menjalankan agent AI lain.';
+    if (/\b(pnpm|npm|yarn|bun)\b[^;&|]*\s(add|install|i|remove|rm|uninstall|update|up|dlx|exec|x)(\s|$)/.test(c))
+      return 'pembangun tidak boleh menambah/mengubah dependency (R8).';
+  }
   for (const seg of c.split(/;|&&|\|\||\|/)) {
     const target = [...seg.matchAll(/(?:^|[^0-9&>])>{1,2}\s*([^\s;|&<>]+)/g)].map((x) => x[1]);
     if (SEGMEN_TULIS.test(seg) || API_TULIS.test(seg)) target.push(...seg.split(/[\s'"=(),]+/));
@@ -426,18 +460,32 @@ export function selHeader(text, label) {
 }
 export function reviewState(root, m) {
   const text = read(join(moduleDir(root, m), DOK.review));
-  if (!text) return { ok: false, reason: `${DOK.review} belum ada → /modul ${m.slice(0, 3)} review` };
+  if (!text)
+    return {
+      ok: false,
+      reason: `${DOK.review} belum ada → /kaf ${m.slice(0, 3)} review`,
+    };
   const cap = selHeader(text, 'Cap kode');
-  if (!/^[0-9a-f]{64}$/.test(cap || '')) return { ok: false, reason: 'review belum dicap (scripts/modul/review.mjs)' };
+  if (!/^[0-9a-f]{64}$/.test(cap || ''))
+    return {
+      ok: false,
+      reason: 'review belum dicap (scripts/modul/review.mjs)',
+    };
   let now;
   try {
     now = codeDigest(root, globModul(bacaTugas(root, m))).digest;
   } catch {
-    return { ok: false, reason: 'tidak bisa membaca git untuk memeriksa cap review' };
+    return {
+      ok: false,
+      reason: 'tidak bisa membaca git untuk memeriksa cap review',
+    };
   }
   return now === cap
     ? { ok: true }
-    : { ok: false, reason: 'isi file modul berubah sejak review terakhir → review lagi' };
+    : {
+        ok: false,
+        reason: 'isi file modul berubah sejak review terakhir → review lagi',
+      };
 }
 
 // ── Validasi modul (cek.mjs & CI) ────────────────────────────────────────────
@@ -512,7 +560,7 @@ export function periksaModul(root, m) {
   return { galat, peringatan };
 }
 
-// ── Tahap modul (index.mjs & /modul) ─────────────────────────────────────────
+// ── Tahap modul (index.mjs & /kaf) ─────────────────────────────────────────
 export function tahapModul(root, m) {
   if (!isV2(root, m)) return { tahap: 'v1 (arsip)', berikut: '–' };
   const d = moduleDir(root, m);
@@ -525,20 +573,20 @@ export function tahapModul(root, m) {
   const tugas = bacaTugas(root, m).filter((t) => t.status !== 'batal');
   const r = (tahap, berikut) => ({ tahap, berikut });
   const menunggu = (id) => ['belum', 'berubah'].includes(st(id));
-  // plan → BRD (00, 01, 03). Mengetik /modul prd = menyetujui K yang terisi.
-  if (!ada('konteks') || !K.length || !K.some((b) => st(b.id) !== 'tunda')) return r('plan', `/modul plan ${n}`);
-  if (!ada('rancangan') || !tugas.length) return r('prd', `/modul prd ${n}`);
-  // Mengetik /modul build = menyetujui K, DATA, KONTRAK yang terisi.
+  // plan → BRD (00, 01, 03). Mengetik /kaf prd = menyetujui K yang terisi.
+  if (!ada('konteks') || !K.length || !K.some((b) => st(b.id) !== 'tunda')) return r('plan', `/kaf plan ${n}`);
+  if (!ada('rancangan') || !tugas.length) return r('prd', `/kaf prd ${n}`);
+  // Mengetik /kaf build = menyetujui K, DATA, KONTRAK yang terisi.
   const dipakai = [...new Set(tugas.flatMap((t) => t.butir))];
-  if (dipakai.some((id) => ['tunda', 'tidak-ada'].includes(st(id)))) return r('plan', `/modul plan ${n}`);
-  if (dipakai.some(menunggu)) return r('build', `/modul build ${n}`);
+  if (dipakai.some((id) => ['tunda', 'tidak-ada'].includes(st(id)))) return r('plan', `/kaf plan ${n}`);
+  if (dipakai.some(menunggu)) return r('build', `/kaf build ${n}`);
   if (tugas.some((t) => ['rancang', 'tes', 'siap', 'kerja', 'blokir'].includes(t.status)))
-    return r('build', `/modul build ${n}`);
-  if (tugas.some((t) => t.status === 'perbaikan') || !reviewState(root, m).ok) return r('review', `/modul review ${n}`);
+    return r('build', `/kaf build ${n}`);
+  if (tugas.some((t) => t.status === 'perbaikan') || !reviewState(root, m).ok) return r('review', `/kaf review ${n}`);
   if (!ada('uat') || st('UAT') !== 'sah')
-    return r('uat', ada('uat') ? `node scripts/modul/setujui.mjs ${n}` : `/modul uat ${n}`);
+    return r('uat', ada('uat') ? `node scripts/modul/setujui.mjs ${n}` : `/kaf uat ${n}`);
   if (!ada('rilis') || st('RILIS') !== 'sah')
-    return r('rilis', ada('rilis') ? `node scripts/modul/setujui.mjs ${n}` : `/modul rilis ${n}`);
+    return r('rilis', ada('rilis') ? `node scripts/modul/setujui.mjs ${n}` : `/kaf rilis ${n}`);
   return r('selesai', '–');
 }
 
@@ -551,18 +599,18 @@ export function penolakanSetujui(env, inTTY, outTTY) {
   return null;
 }
 
-// ── Persetujuan lewat ketikan pemilik (/modul prd, /modul build) ─────────────
+// ── Persetujuan lewat ketikan pemilik (/kaf prd, /kaf build) ─────────────
 /**
- * Mengurai perintah yang DIKETIK pemilik: "/modul prd 002" | "/modul build 002 1-10".
+ * Mengurai perintah yang DIKETIK pemilik: "/kaf prd 002" | "/kaf build 002 1-10".
  * null bila bukan perintah persetujuan.
  */
 export function parsePerintahSetuju(teks) {
-  const m = /^\s*\/modul\s+(prd|build)\s+(\d{1,3}(?:-[a-z0-9-]+)?)\b/.exec(teks || '');
+  const m = /^\s*\/kaf\s+(prd|build)\s+(\d{1,3}(?:-[a-z0-9-]+)?)\b/.exec(teks || '');
   return m ? { aksi: m[1], ref: m[2] } : null;
 }
 /**
- * Mengetik /modul prd  = menyetujui semua baris keputusan (K) yang sudah terisi.
- * Mengetik /modul build = menyetujui semua butir K, DATA, KONTRAK yang sudah terisi.
+ * Mengetik /kaf prd  = menyetujui semua baris keputusan (K) yang sudah terisi.
+ * Mengetik /kaf build = menyetujui semua butir K, DATA, KONTRAK yang sudah terisi.
  * Butir ⏳ tidak pernah disetujui. Mengembalikan daftar ID yang disetujui.
  */
 export function setujuiLewatKetik(root, m, aksi, oleh) {

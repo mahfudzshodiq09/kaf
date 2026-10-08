@@ -1,10 +1,10 @@
-# 02 · Agent `/modul` v2
+# 02 · Agent `/kaf` v2
 
 10 agent. "Dijalankan lewat" menunjukkan cara memanggilnya:
 
-- **Claude Code**: sesi utama yang menjalankan `/modul`.
+- **Claude Code**: sesi utama yang menjalankan `/kaf`.
 - **tanya-model**: `node scripts/modul/tanya-model.mjs` → 9router.
-- **OpenCode**: agent `pembangun`.
+- **bangun**: `node scripts/modul/bangun.mjs` → Claude Code headless (`claude -p`) yang diarahkan ke 9router (model DeepSeek), dengan penjaga yang sama + aturan pembangun.
 
 Prompt untuk agent non-Opus ada di `.claude/modul/agen/`.
 
@@ -16,7 +16,7 @@ Prompt untuk agent non-Opus ada di `.claude/modul/agen/`.
 | 4 | Pewawancara | Opus | Claude Code | `01`, `02`, `PLAN/KEPUTUSAN.md`, `docs/SPESIFIKASI-BISNIS.md` | `03-keputusan.md` | `03` (kecuali kolom Status) | Tidak ada ⏳ tersisa yang dibutuhkan; lalu pemilik menyetujui di terminal |
 | 5 | Perancang | Opus (Besar: + draf BE dari DeepSeek, FE dari Gemini) | Claude Code (+ tanya-model `rancang-be`/`rancang-fe`) | `03` ✅, tech spec, ADR, kode | `04-rancangan.md`, `tugas/NN-*.md` | `04`, `tugas/` | Ada tugas yang tidak bisa dirinci tanpa menebak → baris keputusan baru |
 | 6 | Perancang Uji | Opus (+ Gemini usul kasus tepi) | Claude Code (+ tanya-model `kasus-tepi`) | Tugas `rancang`, butir ✅ | File test merah, stub kontrak, bukti RED, `kunci-tes` | File di `tes:` + stub di `file:` | Setiap butir tugas punya ≥ 1 test bernama `[ID]`; test merah karena **assertion**, bukan karena modul tidak ada |
-| 7 | Pembangun | DeepSeek | OpenCode agent `pembangun` (dipanggil `/modul build` lewat `opencode run`, atau manual `/build`) | **Satu** file tugas `siap` + test-nya + rujukan pola | Kode, commit `Tugas: N`, bagian Hasil | Hanya `file:` tugas (test terkunci) | Test hijau → `selesai`; gagal 2× → `blokir`; kurang jelas → tanya pilihan ganda |
+| 7 | Pembangun | DeepSeek | `node scripts/modul/bangun.mjs <nnn> <no>` (dipanggil `/kaf build` dan `/kaf review`) | **Satu** file tugas `siap` + test-nya + rujukan pola | Kode, commit `Tugas: N`, bagian Hasil | Hanya `file:` tugas (test terkunci) | Test hijau → `selesai`; gagal 2× → `blokir`; kurang jelas → tanya pilihan ganda |
 | 8 | Pemeriksa | Opus (Besar: + Gemini QA, DeepSeek kode) | Claude Code (+ tanya-model `periksa-qa`/`periksa-kode`) | Diff per tugas, file tugas, butir | `05-review.md`, cap review | `05`, status tugas | FAIL → tugas `perbaikan` (maks 2 putaran per tugas, lalu pemilik) |
 | 9 | Penyusun UAT | Gemini, diperiksa Opus | tanya-model `uat` | `03` ✅, `00` DoD | `06-uat.md` (bahasa awam) | `06` | Setiap DoD & butir K punya skenario |
 | 10 | Penjaga Rilis | Opus | Claude Code | Semua artifact, CI, UAT | `07-rilis.md` | `07` | **Selalu** berhenti, pemilik yang merilis |

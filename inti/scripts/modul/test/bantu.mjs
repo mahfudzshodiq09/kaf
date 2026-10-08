@@ -1,4 +1,4 @@
-// Pembantu test /modul: repo git sementara + modul latihan 900-latihan.
+// Pembantu test /kaf: repo git sementara + modul latihan 900-latihan.
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, cpSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname, resolve } from 'node:path';
@@ -35,11 +35,18 @@ export function repoBaru(branch = `feat/${M}`) {
   return { root, g, tulis, baca, commit };
 }
 
-/** Jalankan script /modul di repo sementara. */
+/** Jalankan script /kaf di repo sementara. */
 export function jalankan(root, script, args = [], { env = {}, input } = {}) {
   const r = spawnSync(process.execPath, [join(REPO, 'scripts/modul', script), ...args], {
     cwd: root,
-    env: { ...process.env, CLAUDECODE: '', OPENCODE: '', CI: '', ...env, MODUL_ROOT: root },
+    env: {
+      ...process.env,
+      CLAUDECODE: '',
+      OPENCODE: '',
+      CI: '',
+      ...env,
+      MODUL_ROOT: root,
+    },
     input,
     encoding: 'utf8',
   });
@@ -113,7 +120,12 @@ export function modulLatihan(r) {
   );
   r.tulis(
     `PLAN/${M}/tugas/02-tabel.md`,
-    tugasTeks({ no: 2, butir: 'DATA', file: 'packages/db/prisma/**', tes: 'packages/db/src/cuti.int.test.ts' }),
+    tugasTeks({
+      no: 2,
+      butir: 'DATA',
+      file: 'packages/db/prisma/**',
+      tes: 'packages/db/src/cuti.int.test.ts',
+    }),
   );
 }
 

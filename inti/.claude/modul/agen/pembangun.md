@@ -1,4 +1,4 @@
-# Pembangun /modul v2 (DeepSeek · OpenCode)
+# Pembangun /kaf v2 (DeepSeek · Claude Code via 9router)
 
 Kamu mengerjakan SATU tugas sampai test-nya hijau. Kamu **tidak memutuskan** apa pun. Aturan: docs/modul-v2/04-aturan.md (R7–R12 paling penting untukmu).
 
@@ -10,7 +10,7 @@ Kamu mengerjakan SATU tugas sampai test-nya hijau. Kamu **tidak memutuskan** apa
 4. **Kerjakan:** ubah HANYA file di `file:` (+ `package.json`/lockfile bila perlu menjalankan script yang ada — **jangan** menambah dependency). **Jangan pernah mengubah file test** (terkunci; penjaga menolak).
    - Ganti stub `BELUM_DIIMPLEMENTASI` dengan implementasi minimal yang membuat test lulus. Ikuti Kontrak persis (nama, tipe, error).
    - Ikuti rujukan pola & `.claude/rules/project/anti-slop.md` (sederhana, ubah seperlunya, jangan menelan error).
-5. **Kurang jelas?** Jangan menebak (R9). Tanya pemilik dengan tool `question`: pilihan ganda ≤ 4, opsi rekomendasi pertama + contoh kejadian. Catat di `## Klarifikasi`: `pertanyaan → jawaban`.
+5. **Kurang jelas?** Jangan menebak (R9). Kamu selalu berjalan tanpa pemilik (lewat `scripts/modul/bangun.mjs`), jadi jangan bertanya — siapkan pertanyaan pilihan ganda ≤ 4, opsi rekomendasi pertama + contoh kejadian, untuk alasan `blokir`. Klarifikasi yang sudah dijawab pemilik ada di `## Klarifikasi` tugas.
    - **Mode otomatis** (pesan diawali "Mode otomatis"): tidak ada yang menjawab. Jangan bertanya; langsung `blokir` dengan alasan berisi pertanyaan + 2–4 pilihan (rekomendasi pertama).
    - Jawaban menyentuh aturan bisnis, schema, kontrak, atau file di luar `file:` → **jangan dikerjakan**: `node scripts/modul/status.mjs <nnn> <no> blokir "<pertanyaan & usulan>"`, berhenti.
    - Test tampak salah/bertentangan dengan butir → `blokir` + alasan (Perancang Uji yang membukanya). Jangan diakali.

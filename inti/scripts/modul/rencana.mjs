@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Rencana kerja /modul build & review: tugas dalam rentang, urut nomor, dengan langkah berikutnya per tugas.
+// Rencana kerja /kaf build & review: tugas dalam rentang, urut nomor, dengan langkah berikutnya per tugas.
 // Pemakaian: node scripts/modul/rencana.mjs <nnn> [3 | 1-10 | 1,3,5-7]
 import { findModule, isV2, bacaTugas, cekTugas, parseRentang } from './lib.mjs';
 

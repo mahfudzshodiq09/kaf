@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Gerbang CI /modul v2 — penjaga yang tidak bisa dilewati dari laptop. Aturan: docs/modul-v2/05-gate.md.
+// Gerbang CI /kaf v2 — penjaga yang tidak bisa dilewati dari laptop. Aturan: docs/modul-v2/05-gate.md.
 // Pemakaian di CI: node scripts/modul/check-gate.mjs <base-ref>
 // Env: GITHUB_HEAD_REF (branch PR), NON_MODUL=true (label "non-modul"), PERAWATAN=true (label "perawatan-modul")
 import { join } from 'node:path';
@@ -35,7 +35,7 @@ const lindung = changed.filter(
   (f) => matchesAny(f, LINDUNG) && !/^PLAN\/[^/]+\/(persetujuan|kunci-tes)\.json$/.test(f),
 );
 if (lindung.length && process.env.PERAWATAN !== 'true')
-  galat.push(`file penjaga /modul berubah tanpa label "perawatan-modul":\n    - ${lindung.join('\n    - ')}`);
+  galat.push(`file penjaga /kaf berubah tanpa label "perawatan-modul":\n    - ${lindung.join('\n    - ')}`);
 for (const f of changed.filter((x) => /^PLAN\/[^/]+\/persetujuan\.json$/.test(x)))
   info(`${f} berubah — pastikan semua persetujuan di PR ini memang Anda yang memberi (CODEOWNERS).`);
 

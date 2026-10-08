@@ -2,7 +2,7 @@
 
 Tujuan: fakta bersumber, asumsi, dan gap. **Bukan** keputusan.
 
-1. Kumpulkan file bahan: `00-modul.md`, sumber referensi bisnis yang relevan dari `.claude/modul/proyek.md`, `docs/research/` terkait, `PLAN/KEPUTUSAN.md`. Total di bawah batas tanya-model; pilih yang relevan saja.
+1. Kumpulkan file bahan: `00-modul.md`, `sumber/ide.md` (bila ada), sumber referensi bisnis yang relevan dari `.claude/modul/proyek.md`, `docs/research/` terkait, `PLAN/KEPUTUSAN.md`. Total di bawah batas tanya-model; pilih yang relevan saja.
 2. Jalankan (Besar: dua perintah paralel dengan `&` lalu `wait`):
    ```bash
    node scripts/modul/tanya-model.mjs --peran konteks --model gemini --masuk <file,…> --keluar PLAN/<m>/_swarm/konteks-gemini.md

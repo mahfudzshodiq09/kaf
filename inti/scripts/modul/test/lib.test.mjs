@@ -2,6 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { repoBaru, modulLatihan, M } from './bantu.mjs';
 import {
+  listModules,
+  findModule,
+  periksaFile,
   parseKeputusan,
   hashKeputusan,
   butirModul,
@@ -112,22 +115,22 @@ test('tahap modul mengikuti persetujuan (perintah plan/prd/build)', () => {
   modulLatihan(r);
   assert.deepEqual(
     tahapModul(r.root, M),
-    { tahap: 'build', berikut: '/modul build 900' },
+    { tahap: 'build', berikut: '/kaf build 900' },
     'K1/K2 belum disetujui → ketik build',
   );
   for (const id of ['K1', 'K2']) catatPersetujuan(r.root, M, id, 'Penguji');
-  assert.deepEqual(tahapModul(r.root, M), { tahap: 'build', berikut: '/modul build 900' }, 'DATA/KONTRAK menunggu');
+  assert.deepEqual(tahapModul(r.root, M), { tahap: 'build', berikut: '/kaf build 900' }, 'DATA/KONTRAK menunggu');
   for (const id of ['DATA', 'KONTRAK']) catatPersetujuan(r.root, M, id, 'Penguji');
   assert.deepEqual(
     tahapModul(r.root, M),
-    { tahap: 'build', berikut: '/modul build 900' },
+    { tahap: 'build', berikut: '/kaf build 900' },
     'tugas rancang → build menulis test dulu',
   );
   r.tulis(
     `PLAN/${M}/tugas/02-tabel.md`,
     r.baca(`PLAN/${M}/tugas/02-tabel.md`).replace('butir: DATA', 'butir: DATA, K3'),
   );
-  assert.deepEqual(tahapModul(r.root, M), { tahap: 'plan', berikut: '/modul plan 900' }, 'tugas memakai K3 ⏳');
+  assert.deepEqual(tahapModul(r.root, M), { tahap: 'plan', berikut: '/kaf plan 900' }, 'tugas memakai K3 ⏳');
 });
 
 test('parseRentang & parsePerintahSetuju', () => {
@@ -136,11 +139,17 @@ test('parseRentang & parsePerintahSetuju', () => {
   assert.deepEqual(parseRentang('5,1-2, 7'), [1, 2, 5, 7]);
   assert.equal(parseRentang(''), null);
   assert.throws(() => parseRentang('1-a'), /rentang/);
-  assert.deepEqual(parsePerintahSetuju('/modul prd 002'), { aksi: 'prd', ref: '002' });
-  assert.deepEqual(parsePerintahSetuju('/modul build 2 1-10 --opus'), { aksi: 'build', ref: '2' });
-  assert.equal(parsePerintahSetuju('/modul plan "cuti"'), null);
-  assert.equal(parsePerintahSetuju('/modul review 002'), null);
-  assert.equal(parsePerintahSetuju('tolong /modul prd 002'), null, 'harus di awal ketikan');
+  assert.deepEqual(parsePerintahSetuju('/kaf prd 002'), {
+    aksi: 'prd',
+    ref: '002',
+  });
+  assert.deepEqual(parsePerintahSetuju('/kaf build 2 1-10 --opus'), {
+    aksi: 'build',
+    ref: '2',
+  });
+  assert.equal(parsePerintahSetuju('/kaf plan "cuti"'), null);
+  assert.equal(parsePerintahSetuju('/kaf review 002'), null);
+  assert.equal(parsePerintahSetuju('tolong /kaf prd 002'), null, 'harus di awal ketikan');
 });
 
 test('setujuiLewatKetik: prd hanya K terisi; build K + DATA + KONTRAK; ⏳ tidak pernah', () => {
@@ -155,4 +164,13 @@ test('setujuiLewatKetik: prd hanya K terisi; build K + DATA + KONTRAK; ⏳ tidak
   assert.deepEqual(setujuiLewatKetik(r.root, M, 'build', 'Pemilik'), ['K4', 'DATA', 'KONTRAK']);
   assert.equal(bacaPersetujuan(r.root, M).K3, undefined);
   assert.match(bacaPersetujuan(r.root, M).K1.oleh, /Pemilik/);
+});
+
+test('catatan ide PLAN/_ide/*.md bukan modul dan bebas ditulis', () => {
+  const r = repoBaru();
+  modulLatihan(r);
+  r.tulis('PLAN/_ide/cuti-akademik.md', '# Ide — cuti\n');
+  assert.deepEqual(listModules(r.root), [M]);
+  assert.equal(findModule(r.root, 'PLAN/_ide/cuti-akademik.md'), null);
+  assert.equal(periksaFile(r.root, 'PLAN/_ide/cuti-akademik.md'), null);
 });

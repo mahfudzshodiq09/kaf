@@ -22,8 +22,8 @@ test('file penjaga ditolak, kecuali MODUL_PERAWATAN', () => {
     '.claude/settings.json',
     `PLAN/${M}/persetujuan.json`,
     `PLAN/${M}/kunci-tes.json`,
-    'opencode.json',
-    '.opencode/plugins/gate-modul.js',
+    '.claude/modul/proyek.json',
+    '.claude/modul/kaf.json',
   ])
     assert.match(periksaFile(r.root, f, { perawatan: false }) || '', /file penjaga/, f);
   assert.equal(periksaFile(r.root, 'scripts/modul/lib.mjs', { perawatan: true }), null);
@@ -72,7 +72,9 @@ test('status kerja: file tugas & selalu-boleh; test terkunci & file lain ditolak
   const r = siap();
   r.tulis('apps/siakad/src/cuti.rules.test.ts', "it('[K1] x')\n");
   tulisJson(kunciPath(r.root, M), {
-    1: { 'apps/siakad/src/cuti.rules.test.ts': hashFile(join(r.root, 'apps/siakad/src/cuti.rules.test.ts')) },
+    1: {
+      'apps/siakad/src/cuti.rules.test.ts': hashFile(join(r.root, 'apps/siakad/src/cuti.rules.test.ts')),
+    },
   });
   setStatusTugas(join(r.root, T1), 'kerja');
   assert.equal(periksaFile(r.root, join(r.root, 'apps/siakad/src/cuti.rules.ts')), null, 'path absolut');
@@ -100,13 +102,26 @@ test('Bash: setujui, --no-verify, tulis ke penjaga/kode lain ditolak; baca & red
   assert.equal(b('pnpm test > /dev/null'), null);
   assert.equal(b(`sed -i 's/a/b/' apps/siakad/src/cuti.rules.ts`), null, 'file tugas aktif boleh');
   assert.equal(b('node scripts/modul/kunci-tes.mjs 900 1'), null, 'Opus boleh mengunci');
-  assert.match(b('node scripts/modul/kunci-tes.mjs 900 1', 'opencode') || '', /pembangun/);
-  assert.match(b('node scripts/modul/review.mjs 900', 'opencode') || '', /pembangun/);
+  assert.match(b('node scripts/modul/kunci-tes.mjs 900 1', 'pembangun') || '', /pembangun/);
+  assert.match(b('node scripts/modul/review.mjs 900', 'pembangun') || '', /pembangun/);
+  assert.match(b('node scripts/modul/bangun.mjs 900 2', 'pembangun') || '', /pembangun/);
+  assert.match(b('claude -p "kerjakan"', 'pembangun') || '', /agent AI lain/);
+  assert.match(b('opencode run x', 'pembangun') || '', /agent AI lain/);
+  assert.match(b('pnpm --filter siakad add zod', 'pembangun') || '', /dependency/);
+  assert.match(b('npm install lodash', 'pembangun') || '', /dependency/);
+  assert.equal(b('pnpm --filter siakad test', 'pembangun'), null);
+  assert.equal(b('git commit -m "feat: x"', 'pembangun'), null);
 });
 
 test('proyek.json: folder kode & file selalu-boleh per project (mis. pmb-univet: src/)', () => {
   const r = siap();
-  r.tulis('.claude/modul/proyek.json', JSON.stringify({ kode: ['src/', 'prisma/'], selaluBoleh: ['package.json'] }));
+  r.tulis(
+    '.claude/modul/proyek.json',
+    JSON.stringify({
+      kode: ['src/', 'prisma/'],
+      selaluBoleh: ['package.json'],
+    }),
+  );
   r.tulis(
     `PLAN/${M}/tugas/01-aturan.md`,
     r.baca(`PLAN/${M}/tugas/01-aturan.md`).replace('file: apps/siakad/src/cuti.rules.ts', 'file: src/lib/cuti.ts'),

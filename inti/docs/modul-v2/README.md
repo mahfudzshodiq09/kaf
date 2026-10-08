@@ -1,6 +1,6 @@
-# `/modul` v2: Panduan
+# `/kaf` v2: Panduan
 
-Workflow pengembangan modul new_siakad dengan AI. Pengganti `/modul` v1 (diarsipkan di `arsip-v1/`).
+Workflow pengembangan modul new_siakad dengan AI. Pengganti `/kaf` v1 (diarsipkan di `arsip-v1/`).
 
 | Dokumen | Isi |
 |---|---|
@@ -12,20 +12,21 @@ Workflow pengembangan modul new_siakad dengan AI. Pengganti `/modul` v1 (diarsip
 | [04-aturan](04-aturan.md) | Aturan agent R1–R15 + contoh PASS/FAIL |
 | [05-gate](05-gate.md) | Persetujuan per butir & penjaga |
 | [06-swarm](06-swarm.md) | Kapan & cara memakai banyak model |
-| [07-pemasangan](07-pemasangan.md) | Langkah pemasangan di Mac (9router, OpenCode, CI) |
+| [07-pemasangan](07-pemasangan.md) | Langkah pemasangan di Mac (9router, pembangun, CI) |
 | [08-uji-kering](08-uji-kering.md) | Hasil uji kering & checklist pilot |
 
 ## Sehari-hari
 
 ```bash
 # Claude Code — empat perintah utama
-/modul plan "pengajuan cuti akademik"   # → BRD (tanya-jawab pilihan ganda)
-/modul prd 002                          # setujui BRD → PRD
-/modul build 002                        # setujui PRD → kode semua tugas (atau: /modul build 002 1-5)
-/modul review 002                       # review + perbaikan + test lengkap sampai lulus
+/kaf rangkum cuti-akademik            # (opsional) akhir chat brainstorming → PLAN/_ide/cuti-akademik.md
+/kaf plan PLAN/_ide/cuti-akademik.md  # → BRD dari catatan itu (atau: /kaf plan "pengajuan cuti akademik")
+/kaf prd 002                          # setujui BRD → PRD
+/kaf build 002                        # setujui PRD → kode semua tugas (atau: /kaf build 002 1-5)
+/kaf review 002                       # review + perbaikan + test lengkap sampai lulus
 
-/modul 002                              # lupa langkah berikutnya? ini jawabannya
-/modul uat 002 · /modul rilis 002       # akhir modul
+/kaf 002                              # lupa langkah berikutnya? ini jawabannya
+/kaf uat 002 · /kaf rilis 002       # akhir modul
 
 # Terminal (pemilik)
 pnpm modul:setujui 002                  # UAT/RILIS, atau cadangan persetujuan

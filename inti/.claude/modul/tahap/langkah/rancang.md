@@ -1,6 +1,6 @@
 # Langkah prd-1 — Rancang · Opus (+ draf BE/FE bila Besar)
 
-Syarat: baris K sudah disetujui (otomatis saat pemilik mengetik `/modul prd`).
+Syarat: baris K sudah disetujui (otomatis saat pemilik mengetik `/kaf prd`).
 
 1. Baca: `00-modul.md`, `03-keputusan.md`, `.claude/modul/proyek.md` (stack, struktur, aturan teknis: baca hanya bagian/ID yang relevan), dan kode yang dirujuk di `01-konteks.md`.
 2. Besar: minta draf paralel → `_swarm/rancang-be.md` (`--peran rancang-be --model deepseek`) & `_swarm/rancang-fe.md` (`--peran rancang-fe --model gemini`), bahan `00`, `01`, `03`. Gabungkan.

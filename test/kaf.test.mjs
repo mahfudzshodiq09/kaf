@@ -18,7 +18,12 @@ function project(jenis) {
     tulis('pnpm-workspace.yaml', 'packages: [apps/*]\n');
     mkdirSync(join(t, '.github'));
   }
-  return { t, baca: (p) => readFileSync(join(t, p), 'utf8'), tulis, ada: (p) => existsSync(join(t, p)) };
+  return {
+    t,
+    baca: (p) => readFileSync(join(t, p), 'utf8'),
+    tulis,
+    ada: (p) => existsSync(join(t, p)),
+  };
 }
 const json = (s) => JSON.parse(s);
 
@@ -31,7 +36,9 @@ test('install monorepo: inti, benih profil, settings digabung, skrip, CLAUDE.md,
   assert.ok(
     p.ada('scripts/modul/lib.mjs') &&
       p.ada('.claude/hooks/setujui-ketik.mjs') &&
-      p.ada('.opencode/plugins/gate-modul.js'),
+      p.ada('scripts/modul/bangun.mjs') &&
+      !p.ada('.opencode/plugins/gate-modul.js') &&
+      !p.ada('opencode.json'),
   );
   assert.deepEqual(json(p.baca('.claude/modul/proyek.json')).kode, ['apps/', 'packages/']);
   assert.equal(json(p.baca('.claude/modul/proyek.json')).app, 'siakad');
@@ -41,7 +48,10 @@ test('install monorepo: inti, benih profil, settings digabung, skrip, CLAUDE.md,
   assert.match(s.hooks.UserPromptExpansion[0].hooks[0].command, /setujui-ketik/);
   assert.equal(json(p.baca('package.json')).scripts['modul:setujui'], 'node scripts/modul/setujui.mjs');
   assert.equal(json(p.baca('package.json')).scripts.dev, 'next dev');
-  assert.match(p.baca('CLAUDE.md'), /<!-- kaf:mulai[\s\S]*\/modul \(kaf [\d.]+\)[\s\S]*<!-- kaf:selesai -->/);
+  assert.match(
+    p.baca('CLAUDE.md'),
+    /<!-- kaf:mulai[\s\S]*\/kaf — workflow modul \(kaf [\d.]+\)[\s\S]*<!-- kaf:selesai -->/,
+  );
   const m = json(p.baca(MANIFEST));
   assert.equal(m.versi, VERSI);
   assert.equal(Object.keys(m.berkas).length, l.inti);
@@ -57,7 +67,7 @@ test('install nextjs-npm: tanpa .github → workflow CI tidak dipasang; folder k
   assert.equal(l.profil, 'nextjs-npm');
   assert.equal(p.ada('.github/workflows/modul-gate.yml'), false);
   assert.deepEqual(json(p.baca('.claude/modul/proyek.json')).kode, ['src/', 'prisma/', 'tests/']);
-  assert.match(p.baca('opencode.json'), /npm run test:unit\*/);
+  assert.deepEqual(json(p.baca('.claude/modul/proyek.json')).pembangunBash.slice(0, 1), ['npm run lint']);
 });
 
 test('update: timpa yang tidak diubah, lewati yang diubah lokal, jaga benih, hapus berkas usang, --paksa', () => {
@@ -101,14 +111,14 @@ test('update: timpa yang tidak diubah, lewati yang diubah lokal, jaga benih, hap
   assert.deepEqual(cek(p.t).diubah, []);
 });
 
-test('CLAUDE.md: blok diganti bila ada penanda; dilewati bila sudah menjelaskan /modul v2', () => {
+test('CLAUDE.md: blok diganti bila ada penanda; dilewati bila sudah menjelaskan /kaf v2', () => {
   const p = project('npm');
   p.tulis('CLAUDE.md', '# X\n\n<!-- kaf:mulai lama -->\nisi lama\n<!-- kaf:selesai -->\n\n## Lain\n');
   assert.equal(gabungClaudeMd(p.t), 'ganti');
   assert.match(p.baca('CLAUDE.md'), /^# X[\s\S]*\(kaf [\d.]+\)[\s\S]*## Lain/);
   assert.doesNotMatch(p.baca('CLAUDE.md'), /isi lama/);
   const q = project('npm');
-  q.tulis('CLAUDE.md', 'Workflow **`/modul` v2** sudah dijelaskan.\n');
+  q.tulis('CLAUDE.md', 'Workflow **`/kaf` v2** sudah dijelaskan.\n');
   assert.equal(gabungClaudeMd(q.t), 'lewati');
 });
 
@@ -124,7 +134,7 @@ test('CLI menolak install/update dari tool AI; cek boleh', () => {
   assert.equal(run(['cek', p.t], { CLAUDECODE: '1' }).status, 0);
 });
 
-test('install sungguhan menjalankan 38 test /modul di project', () => {
+test('install sungguhan menjalankan 38 test /kaf di project', () => {
   const p = project('monorepo');
   const l = install(p.t, {});
   assert.equal(l.tes.ok, true, JSON.stringify(l.tes));

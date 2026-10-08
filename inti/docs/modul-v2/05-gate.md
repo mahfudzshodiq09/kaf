@@ -1,4 +1,4 @@
-# 05 · Persetujuan & Penjaga `/modul` v2
+# 05 · Persetujuan & Penjaga `/kaf` v2
 
 ## Butir yang disetujui
 
@@ -24,14 +24,14 @@ Butir **sah** bila tercatat di `persetujuan.json` dengan hash yang sama dengan i
 
 | Pemilik mengetik | Yang disetujui |
 |---|---|
-| `/modul prd <nnn>` | Semua baris K yang terisi & baru/berubah (BRD) |
-| `/modul build <nnn> [rentang]` | Semua K + DATA + KONTRAK yang terisi & baru/berubah (PRD) |
+| `/kaf prd <nnn>` | Semua baris K yang terisi & baru/berubah (BRD) |
+| `/kaf build <nnn> [rentang]` | Semua K + DATA + KONTRAK yang terisi & baru/berubah (PRD) |
 
-- Baris ⏳ tidak pernah ikut disetujui. `persetujuan.json` mencatat `oleh: "<nama git> (mengetik /modul prd)"`.
+- Baris ⏳ tidak pernah ikut disetujui. `persetujuan.json` mencatat `oleh: "<nama git> (mengetik /kaf prd)"`.
 - AI tidak bisa memicunya:
   - `UserPromptSubmit` diabaikan (event itu juga terpicu oleh giliran otomatis);
   - tool `Skill`/`SlashCommand` yang memuat `modul prd|build` ditolak hook;
-  - `claude … /modul prd|build` lewat Bash ditolak.
+  - `claude … /kaf prd|build` lewat Bash ditolak.
 - Sebelum mengetik, pemilik melihat **tabel BRD** (di akhir `plan`) atau **ringkasan PRD** (di akhir `prd`). Itu pengganti Cek Pemahaman.
 
 **Cadangan / UAT & RILIS, lewat terminal:**
@@ -48,14 +48,14 @@ Menolak berjalan bila bukan terminal interaktif, atau ada env `CLAUDECODE`/`OPEN
 | Lapisan | Di mana | Memeriksa |
 |---|---|---|
 | Hook Claude Code | `.claude/hooks/gate-modul.mjs` (Edit, Write, MultiEdit, NotebookEdit, Bash) | Lihat aturan file di bawah + Bash: `setujui`, menulis ke file terlindung, `--no-verify` |
-| Plugin OpenCode | `.opencode/plugins/gate-modul.js` (edit, write, apply_patch, bash) | Aturan file yang sama + Bash: juga `kunci-tes`, `review.mjs` |
-| Izin agent OpenCode | `opencode.json` agent `pembangun` | Bash hanya `pnpm lint/typecheck/test/e2e/build/format`, `git status/diff/add/commit/log`, `node scripts/modul/status.mjs`, `node scripts/modul/cek.mjs` |
+| Hook yang sama, mode pembangun | `bangun.mjs` menjalankan `claude -p` dengan env `MODUL_PERAN=pembangun` | Aturan file yang sama + Bash: juga `kunci-tes`, `review.mjs`, `bangun.mjs`, agent lain (`claude`/`opencode`), tambah dependency; alat Skill/Task/Web ditolak |
+| Izin pembangun | `--allowedTools` dari `bangun.mjs` (`pembangunBash` di `proyek.json`, bawaan sesuai lockfile) | Bash hanya perintah verifikasi (lint/typecheck/test/e2e/build/format), `git status/diff/add/commit/log/show`, `status.mjs`, `cek.mjs`, `rencana.mjs` |
 | CI | `scripts/modul/check-gate.mjs` (required check) | **Per commit**: trailer `Tugas: N`, file ⊂ tugas N, tugas sah, test terkunci tidak berubah, file terlindung tidak berubah tanpa label `perawatan-modul`, gerbang UAT |
 
-### Aturan file (hook & plugin memakai fungsi yang sama: `periksaFile()` di `lib.mjs`)
+### Aturan file (orkestrator & pembangun memakai fungsi yang sama: `periksaFile()` di `lib.mjs`)
 
-1. **File terlindung** → ditolak, kecuali Claude Code/OpenCode dijalankan dengan `MODUL_PERAWATAN=1` (diset pemilik saat membuka tool, bukan oleh AI):
-   `scripts/modul/**`, `.claude/hooks/**`, `.claude/settings.json`, `.opencode/plugins/**`, `opencode.json`, `.github/workflows/modul-gate.yml`, `PLAN/*/persetujuan.json`, `PLAN/*/kunci-tes.json`.
+1. **File terlindung** → ditolak, kecuali Claude Code dijalankan dengan `MODUL_PERAWATAN=1` (pembangun tidak pernah mewarisinya) (diset pemilik saat membuka tool, bukan oleh AI):
+   `scripts/modul/**`, `.claude/hooks/**`, `.claude/settings.json`, `.claude/modul/proyek.json`, `.claude/modul/kaf.json`, `.github/workflows/modul-gate.yml`, `PLAN/*/persetujuan.json`, `PLAN/*/kunci-tes.json`.
 2. File di luar folder kode (`.claude/modul/proyek.json`: `apps/`, `packages/`) → boleh.
 3. Bukan branch modul (`feat/<nnn>-<slug>`) → boleh (CI meminta label `non-modul`).
 4. Jumlah tugas aktif harus tepat **1**. Tugas itu harus **sah**.
@@ -73,8 +73,8 @@ Menolak berjalan bila bukan terminal interaktif, atau ada env `CLAUDECODE`/`OPEN
 | B1 AI bisa menjalankan `approve` | Persetujuan hanya lewat ketikan pemilik (hook UserPromptExpansion) atau terminal interaktif; AI dicegah memanggil keduanya |
 | B2 AI bisa mengubah penjaga | Daftar file terlindung + label `perawatan-modul` di CI |
 | B3 status 🟡 melebarkan izin | Tepat 1 tugas aktif; >1 = semua edit ditolak |
-| B4 Bash tidak dijaga | Hook Bash (Claude Code) + allowlist Bash (OpenCode) + CI per commit |
-| B5 hook hanya Claude Code | Plugin OpenCode memakai `lib.mjs` yang sama |
+| B4 Bash tidak dijaga | Hook Bash + allowlist Bash pembangun + CI per commit |
+| B5 hook hanya Claude Code | Pembangun juga berjalan di Claude Code → hook yang sama |
 | B6 CI cek gabungan | CI cek per commit + trailer |
 | C1–C4 konteks berat | Router ringkas + file per tahap; rules ECC dipindah; tugas ≤ 100 baris |
 | D1 pembangun menulis test sendiri | Test ditulis Opus & dikunci |

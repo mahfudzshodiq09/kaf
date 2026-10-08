@@ -1,4 +1,4 @@
-# 04 · Aturan Agent `/modul` v2
+# 04 · Aturan Agent `/kaf` v2
 
 Berlaku untuk semua agent. File tahap di `.claude/modul/tahap/` merujuk ID aturan ini.
 
@@ -9,7 +9,7 @@ Berlaku untuk semua agent. File tahap di `.claude/modul/tahap/` merujuk ID atura
 | R3 | **Keputusan hanya di `03-keputusan.md`.** Tidak boleh ada aturan bisnis baru di rancangan, tugas, komentar kode, atau test yang tidak punya ID K. | Test `[K4] …` memeriksa aturan K4. | Rancangan menulis "maksimal 2 kali cuti" tanpa ID K. |
 | R4 | **Asumsi bukan fakta.** Asumsi ditulis `A` di konteks. Dipakai hanya setelah menjadi K ✅. | A3 → ditanyakan → K9 ✅ → dipakai di tugas 4. | Tugas memakai A3 langsung. |
 | R5 | **Rujuk, jangan salin.** Rancangan & tugas menyebut ID butir; isi aturan dibaca dari sumbernya. | `butir: K1, K2` | Menyalin kalimat K1 ke tugas "biar lengkap". |
-| R6 | **Hanya pemilik yang menyetujui**, dengan mengetik `/modul prd`/`/modul build` atau `pnpm modul:setujui`. AI tidak memanggil keduanya, tidak mengedit `persetujuan.json`/`kunci-tes.json`, tidak mengubah kolom Status keputusan. | "Kalau sudah sesuai, ketik `/modul prd 002`." | AI memanggil `/modul build` lewat tool Skill, menulis `✅` sendiri, atau menjalankan `setujui`. |
+| R6 | **Hanya pemilik yang menyetujui**, dengan mengetik `/kaf prd`/`/kaf build` atau `pnpm modul:setujui`. AI tidak memanggil keduanya, tidak mengedit `persetujuan.json`/`kunci-tes.json`, tidak mengubah kolom Status keputusan. | "Kalau sudah sesuai, ketik `/kaf prd 002`." | AI memanggil `/kaf build` lewat tool Skill, menulis `✅` sendiri, atau menjalankan `setujui`. |
 | R7 | **Tidak mengakali penjaga.** Ditolak hook/plugin/CI → jelaskan sebabnya dan usulkan jalan resmi (`ubah`, baris baru, `--buka`). | "Ditolak karena tugas 4 butuh K9 yang belum disetujui." | Menulis file lewat `cat >`/`sed -i` setelah Edit ditolak. |
 | R8 | **Pembangun persis tugas.** Satu tugas aktif. Hanya `file:` tugas. Tidak mengubah test terkunci, tidak menambah fitur/dependency/file, tidak "sekalian merapikan". | Diff hanya `cuti.rules.ts`. | Ikut mengubah `krs.rules.ts` karena "kelihatan salah". |
 | R9 | **Kurang jelas → tanya, jangan menebak.** Pertanyaan pilihan ganda, lalu lanjut. Jawaban yang menyentuh aturan bisnis = baris K baru (tugas `blokir`). Jawaban teknis kecil dicatat di Klarifikasi. | "Urutan daftar: (1) terbaru dulu ✓ …" → dicatat, lanjut. | Memilih sendiri urutan lalu tidak mencatatnya. |

@@ -10,8 +10,8 @@
 | `penjaga.test.mjs` (8) | File penjaga terkunci (kecuali mode perawatan); tepat 1 tugas aktif; tugas belum sah ditolak; status `tes` hanya test + stub; test terkunci tidak bisa diedit; Bash: `setujui`, `--no-verify`, tulis ke penjaga/kode lain ditolak, perintah baca & redirect aman boleh; pembangun tidak bisa `kunci-tes` |
 | `skrip.test.mjs` (6) | `setujui` **menolak** tanpa terminal & dari tool AI (`--lihat` boleh); `kunci-tes` butuh Bukti RED + test `[K..]`, `--buka` butuh alasan; transisi status, dependensi, Hasil, commit `Tugas: N`; `tanya-model` mencatat model penjawab & menandai **MODEL BERBEDA** (server 9router tiruan); `baru` |
 | `ci.test.mjs` (7) | CI per commit: trailer wajib, file di luar tugas, tugas fiktif, test terkunci diubah, butir berubah, file penjaga tanpa label, branch non-modul, gerbang UAT |
-| `adaptor.test.mjs` (2) | Hook Claude Code (input JSON asli → exit 2) & plugin OpenCode (edit, write, `apply_patch`, bash) memakai aturan yang sama |
-| `ketik.test.mjs` (4) | Mengetik `/modul prd` menyetujui K terisi (3 bentuk input hook), `/modul build` + DATA & KONTRAK; ⏳ tidak pernah; `UserPromptSubmit` & perintah lain tidak menyetujui; AI tidak bisa memanggil lewat Skill/SlashCommand/`claude -p`; `rencana.mjs` (rentang, dependensi) |
+| `adaptor.test.mjs` (3) | Hook Claude Code (input JSON asli → exit 2); hook mode pembangun (`MODUL_PERAN=pembangun`) lebih ketat; `bangun.mjs` menyusun env 9router & izin Bash dengan benar |
+| `ketik.test.mjs` (4) | Mengetik `/kaf prd` menyetujui K terisi (3 bentuk input hook), `/kaf build` + DATA & KONTRAK; ⏳ tidak pernah; `UserPromptSubmit` & perintah lain tidak menyetujui; AI tidak bisa memanggil lewat Skill/SlashCommand/`claude -p`; `rencana.mjs` (rentang, dependensi) |
 | `simulasi.test.mjs` (1) | **Siklus penuh** modul latihan: baru → konteks → keputusan (K3 ⏳ tidak menahan) → rancang → tes (stub + RED + kunci) → build (dependensi, test terkunci) → ubah K3 di tengah build (tugas lain jalan) → review (cap) → UAT → rilis → `selesai`; INDEX & KEPUTUSAN dibangkitkan; CI lulus; lalu kode diubah tanpa review → CI menolak |
 
 **Uji mutasi** (aturan sengaja dirusak, test harus gagal):
@@ -24,8 +24,8 @@
 | CI tidak cek trailer | 1 |
 | Boleh > 1 tugas aktif | 1 |
 | `UserPromptSubmit` (giliran otomatis) ikut menyetujui | 1 |
-| `/modul prd` ikut menyetujui DATA/KONTRAK | 2 |
-| AI boleh memanggil `/modul build` lewat Skill | 1 |
+| `/kaf prd` ikut menyetujui DATA/KONTRAK | 2 |
+| AI boleh memanggil `/kaf build` lewat Skill | 1 |
 
 **Bug yang ditemukan uji kering & sudah diperbaiki:**
 
@@ -38,9 +38,8 @@
 ## Yang BELUM diuji (butuh Mac-mu)
 
 - Panggilan 9router sungguhan (`07-pemasangan.md` §3).
-- Plugin di OpenCode sungguhan. Yang sudah diuji hanya fungsinya, belum dimuat runtime Bun OpenCode (§5).
 - Hook di Claude Code sungguhan (§4), terutama **nama field input `UserPromptExpansion`** untuk persetujuan lewat ketikan.
-- `opencode run --agent pembangun` dipanggil dari `/modul build` (durasi, perilaku tanpa tool `question`).
+- `bangun.mjs` sungguhan: Claude Code headless lewat 9router dengan model DeepSeek (`node scripts/modul/bangun.mjs --cek`, lalu satu tugas nyata).
 - `setujui` interaktif di terminal (y/n/k/q).
 - GitHub Actions sungguhan dan Node 24 (§2, §7).
 - Kualitas hasil Gemini/DeepSeek dengan prompt peran ini. Itu baru terlihat di pilot.

@@ -22,10 +22,15 @@ test('setujui: --lihat boleh tanpa terminal; menyetujui ditolak tanpa terminal /
   assert.equal(lihat.code, 0);
   assert.match(lihat.out, /4 butir menunggu/);
   assert.match(lihat.out, /⏳ K3/);
-  const pipa = jalankan(r.root, 'setujui.mjs', ['900'], { input: 'y\ny\ny\ny\n' });
+  const pipa = jalankan(r.root, 'setujui.mjs', ['900'], {
+    input: 'y\ny\ny\ny\n',
+  });
   assert.equal(pipa.code, 1);
   assert.match(pipa.out, /Ditolak: .*(interaktif|tool AI)/);
-  const ai = jalankan(r.root, 'setujui.mjs', ['900'], { env: { CLAUDECODE: '1' }, input: 'y\n' });
+  const ai = jalankan(r.root, 'setujui.mjs', ['900'], {
+    env: { CLAUDECODE: '1' },
+    input: 'y\n',
+  });
   assert.match(ai.out, /tool AI/);
   assert.equal(existsSync(join(r.root, `PLAN/${M}/persetujuan.json`)), false, 'tidak ada yang tertulis');
 });
@@ -89,7 +94,9 @@ test('tanya-model: memanggil 9router, mencatat model penjawab, menandai MODEL BE
   salinTemplate(r);
   r.tulis(
     '.claude/modul/model.json',
-    JSON.stringify({ model: { gemini: 'gemini-uji', deepseek: 'ISI_NAMA_MODEL_DEEPSEEK' } }),
+    JSON.stringify({
+      model: { gemini: 'gemini-uji', deepseek: 'ISI_NAMA_MODEL_DEEPSEEK' },
+    }),
   );
   r.tulis('bahan.md', 'Pedoman: cuti maksimal 2 semester.');
   let dijawab = 'gemini-uji';
@@ -127,7 +134,10 @@ test('tanya-model: memanggil 9router, mencatat model penjawab, menandai MODEL BE
             '--keluar',
             keluar,
           ],
-          { cwd: r.root, env: { ...process.env, MODUL_ROOT: r.root, MODUL_ROUTER_URL: url } },
+          {
+            cwd: r.root,
+            env: { ...process.env, MODUL_ROOT: r.root, MODUL_ROUTER_URL: url },
+          },
           (e, so, se) => ok({ code: e ? e.code : 0, out: so + se }),
         ),
       );

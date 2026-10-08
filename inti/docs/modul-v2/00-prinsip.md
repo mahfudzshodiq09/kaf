@@ -1,4 +1,4 @@
-# 00 · Prinsip `/modul` v2
+# 00 · Prinsip `/kaf` v2
 
 Patokan untuk semua keputusan desain v2. Bila ada aturan, script, atau template yang bertentangan dengan prinsip ini, yang salah adalah aturannya.
 
@@ -13,7 +13,7 @@ Patokan untuk semua keputusan desain v2. Bila ada aturan, script, atau template 
 | P7 | **Dokumen kecil dan berbatas.** Setiap artifact punya batas ukuran, dicek otomatis. | Rancangan ≤ 400 baris, tugas ≤ 100 baris. |
 | P8 | **Satu tugas aktif, satu commit, file sesuai tugas.** Dicek per commit di CI, bukan gabungan. | Commit bertrailer `Tugas: 3` hanya boleh menyentuh file milik tugas 3. |
 | P9 | **Asumsi bukan fakta.** Konteks memisahkan fakta bersumber dan asumsi. Asumsi baru boleh dipakai setelah menjadi baris keputusan ✅. | A2 "pembayaran sinkron" → ditanyakan → K9 ✅ → baru dipakai. |
-| P10 | **Proses sesuai risiko.** Kecil di luar `/modul`, Sedang ringkas, Besar memakai swarm. | Ganti label → `/ecc:orch-change-feature`. Aturan kelulusan → Besar. |
+| P10 | **Proses sesuai risiko.** Kecil di luar `/kaf`, Sedang ringkas, Besar memakai swarm. | Ganti label → `/ecc:orch-change-feature`. Aturan kelulusan → Besar. |
 | P11 | **Jujur dan berbukti.** Anti-slop tetap berlaku. Output asli ditempel, dan yang tidak dicek ditulis. | "Test integrasi tidak dijalankan: Postgres tidak tersedia." |
 | P12 | **Pemilik adalah developer.** Ke pemilik boleh memakai bahasa teknis yang ringkas. Bahasa awam hanya untuk unit kampus (UAT, panduan rilis). | Ringkasan untuk pemilik boleh menyebut tabel, kolom, dan endpoint. |
 

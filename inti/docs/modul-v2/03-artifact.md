@@ -1,4 +1,4 @@
-# 03 · Artifact `/modul` v2
+# 03 · Artifact `/kaf` v2
 
 Lokasinya `PLAN/<nnn>-<slug>/`. Template ada di `.claude/modul/template/`. Batas ukuran diperiksa oleh `node scripts/modul/cek.mjs <nnn>`.
 

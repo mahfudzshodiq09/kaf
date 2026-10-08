@@ -1,4 +1,4 @@
-# 06 · Swarm `/modul` v2
+# 06 · Swarm `/kaf` v2
 
 Swarm = beberapa model mengerjakan **pertanyaan yang sama dari sudut berbeda**, lalu Opus menggabungkannya. Gunanya untuk menangkap titik buta, bukan mengulang kerja.
 

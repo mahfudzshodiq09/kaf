@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Persetujuan lewat ketikan pemilik (hook UserPromptExpansion — hanya terpicu oleh perintah yang DIKETIK manusia).
-//   /modul prd <nnn>    → menyetujui semua baris keputusan (K) yang sudah terisi (BRD)
-//   /modul build <nnn>  → menyetujui semua K + DATA + KONTRAK yang sudah terisi (PRD)
+//   /kaf prd <nnn>    → menyetujui semua baris keputusan (K) yang sudah terisi (BRD)
+//   /kaf build <nnn>  → menyetujui semua K + DATA + KONTRAK yang sudah terisi (PRD)
 // Butir ⏳ tidak pernah disetujui. Desain: docs/modul-v2/05-gate.md.
 import { readFileSync } from 'node:fs';
 
@@ -33,7 +33,8 @@ const keluar = (teks) => {
   );
   process.exit(0);
 };
-if (!m || !lib.isV2(root, m)) keluar(`[setujui-ketik] modul "${cmd.ref}" tidak ditemukan / bukan v2 — tidak ada yang disetujui.`);
+if (!m || !lib.isV2(root, m))
+  keluar(`[setujui-ketik] modul "${cmd.ref}" tidak ditemukan / bukan v2 — tidak ada yang disetujui.`);
 
 let oleh = 'pemilik';
 try {
@@ -41,10 +42,10 @@ try {
 } catch {
   // git tidak tersedia: tetap "pemilik"
 }
-const ids = lib.setujuiLewatKetik(root, m, cmd.aksi, `${oleh} (mengetik /modul ${cmd.aksi})`);
+const ids = lib.setujuiLewatKetik(root, m, cmd.aksi, `${oleh} (mengetik /kaf ${cmd.aksi})`);
 const tunda = [...lib.butirModul(root, m).values()].filter((b) => b.tunda).map((b) => b.id);
 keluar(
-  `[setujui-ketik] Pemilik mengetik /modul ${cmd.aksi} ${m.slice(0, 3)} → disetujui: ${ids.join(', ') || '(tidak ada yang baru)'}` +
+  `[setujui-ketik] Pemilik mengetik /kaf ${cmd.aksi} ${m.slice(0, 3)} → disetujui: ${ids.join(', ') || '(tidak ada yang baru)'}` +
     (tunda.length ? ` · masih ⏳ (tidak disetujui): ${tunda.join(', ')}` : '') +
     '. Persetujuan ini dicatat oleh hook, bukan oleh AI — jangan menulis persetujuan sendiri.',
 );

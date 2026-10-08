@@ -1,4 +1,4 @@
-# /modul review · Opus memeriksa, DeepSeek memperbaiki, sampai lulus
+# /kaf review · Opus memeriksa, DeepSeek memperbaiki, sampai lulus
 
 Memeriksa **semua tugas yang dikerjakan sejak review terakhir** (satu putaran = satu rentang build), lalu menjalankan test lengkap modul. Pemeriksa tidak menulis kode aplikasi; perbaikan dikerjakan DeepSeek.
 
@@ -20,12 +20,12 @@ Tidak bisa dijalankan → tulis **tidak dicek** + alasan (jangan dianggap lulus)
 ## 4. Tulis putaran di `05-review.md` lalu perbaiki otomatis
 - **CRITICAL/HIGH** → `node scripts/modul/status.mjs <nnn> <no> perbaikan "<temuan>"` → DeepSeek (timeout 600000 ms):
   ```bash
-  opencode run --agent pembangun "Mode otomatis. Perbaiki tugas <no> modul <nnn>: temuannya ada di PLAN/<m>/05-review.md (putaran terakhir). Test terkunci — perbaiki kodenya saja, lalu selesaikan sesuai prosedurmu."
+  node scripts/modul/bangun.mjs <nnn> <no> --perbaiki
   ```
   Lalu periksa ulang **hanya** diff perbaikan itu + test terkait (ulang langkah 2–3 untuk tugas itu).
 - Temuan yang **tidak tertangkap test** yang ada → tambah test dulu: `kunci-tes.mjs <nnn> <no> --buka "<temuan>"` → `langkah/tes.md` (test baru harus merah) → baru DeepSeek memperbaiki.
 - **Batas: 2 putaran perbaikan per tugas.** Masih FAIL → berhenti, tanya pemilik (AskUserQuestion: perbaiki manual / ubah tugas / terima sebagai utang).
-- Temuan yang butuh keputusan bisnis → baris K baru, tugas `blokir`, minta pemilik `/modul build <nnn> <no>` setelah menjawab.
+- Temuan yang butuh keputusan bisnis → baris K baru, tugas `blokir`, minta pemilik `/kaf build <nnn> <no>` setelah menjawab.
 - **MEDIUM/LOW** → "Utang kecil" (tidak membuka tugas).
 
 ## 5. Tutup
@@ -33,4 +33,4 @@ Semua tugas di rentang PASS dan test lengkap hijau → commit `05-review.md` →
 
 ## Ringkasan akhir (≤ 15 baris)
 `| No | Hasil (PASS/diperbaiki n×/FAIL) | Temuan utama |` + hasil test lengkap (asli) + utang kecil + yang tidak dicek. Penutup:
-> Semua lulus → berikutnya **`/modul uat <nnn>`** (atau build tugas berikutnya: `/modul build <nnn> <rentang>`).
+> Semua lulus → berikutnya **`/kaf uat <nnn>`** (atau build tugas berikutnya: `/kaf build <nnn> <rentang>`).

@@ -1,4 +1,4 @@
-# 07 · Pemasangan `/modul` v2 (lewat kaf)
+# 07 · Pemasangan `/kaf` v2 (lewat kaf)
 
 ## 1. Pasang / perbarui
 
@@ -7,13 +7,14 @@ node ~/Documents/nextjs/kaf/bin/kaf.mjs install .     # project baru
 node ~/Documents/nextjs/kaf/bin/kaf.mjs update .      # project yang sudah memakai kaf
 ```
 
-✅ Di akhir tampil `tes /modul: 38/38 lulus`.
+✅ Di akhir tampil `tes /kaf: 38/38 lulus`.
 
 ## 2. Lengkapi milik project (sekali)
 
 - `.claude/modul/proyek.md`: stack, struktur kode, perintah verifikasi, sumber referensi bisnis, larangan khusus.
 - `.claude/modul/proyek.json`: folder kode yang dijaga (`kode`) dan file yang selalu boleh diubah (`selaluBoleh`).
-- `.claude/modul/model.json` dan `opencode.json`: nama model **tetap** Gemini & DeepSeek di 9router (`curl -s http://localhost:20128/v1/models`).
+- `.claude/modul/model.json`: nama model **tetap** Gemini & DeepSeek di 9router (`curl -s http://localhost:20128/v1/models`). Kunci 9router (bila ada) di env `NINEROUTER_API_KEY`.
+- `.claude/modul/proyek.json` → `pembangunBash` (opsional): awalan perintah Bash yang boleh dijalankan pembangun. Kosong = bawaan sesuai lockfile.
 
 Semua file ini file penjaga, jadi edit sendiri di editor, bukan lewat AI.
 
@@ -27,18 +28,19 @@ head -3 .uji-9router.md && rm .uji-9router.md     # ✅ dijawab=<nama gemini>, t
 ## 4. Claude Code (buka ulang supaya hook termuat)
 
 - Minta AI mengubah `.claude/settings.json` → ✅ ditolak `[gate-modul] … file penjaga`.
-- `/modul bantuan` → ✅ tabel perintah.
+- `/kaf bantuan` → ✅ tabel perintah.
 - Uji persetujuan lewat ketikan:
   1. `node scripts/modul/baru.mjs uji-ketik`
   2. Isi satu baris K di `03-keputusan.md` modul itu.
-  3. **Ketik** `/modul prd <nnn>` → ✅ `persetujuan.json` berisi K1 `oleh: "… (mengetik /modul prd)"`.
+  3. **Ketik** `/kaf prd <nnn>` → ✅ `persetujuan.json` berisi K1 `oleh: "… (mengetik /kaf prd)"`.
   4. Hapus folder modul uji sesudahnya.
 
   Tidak terbentuk? Jalankan `claude --debug`, lalu cek log `UserPromptExpansion`. Cadangannya: `node scripts/modul/setujui.mjs <nnn>`.
 
-## 5. OpenCode
+## 5. Pembangun (DeepSeek lewat Claude Code + 9router)
 
-`opencode` → `/models` → ✅ ada "9router (lokal)" → agent **pembangun** → minta mengubah `scripts/modul/lib.mjs` → ✅ ditolak.
+`node scripts/modul/bangun.mjs --cek` → ✅ semua baris centang, diakhiri "Pembangun siap."
+Gagal di "uji panggil" → pastikan 9router menerima format Anthropic (`/v1/messages`) untuk model DeepSeek-nya; sementara itu pakai `/kaf build … --opus`.
 
 ## 6. GitHub (bila project memakai GitHub Actions)
 

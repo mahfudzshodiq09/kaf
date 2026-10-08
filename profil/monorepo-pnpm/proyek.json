@@ -1,5 +1,21 @@
 {
   "app": "<app>",
-  "kode": ["apps/", "packages/"],
-  "selaluBoleh": ["apps/*/package.json", "packages/*/package.json", "pnpm-lock.yaml"]
+  "kode": [
+    "apps/",
+    "packages/"
+  ],
+  "selaluBoleh": [
+    "apps/*/package.json",
+    "packages/*/package.json",
+    "pnpm-lock.yaml"
+  ],
+  "pembangunBash": [
+    "pnpm lint",
+    "pnpm typecheck",
+    "pnpm test",
+    "pnpm e2e",
+    "pnpm build",
+    "pnpm format",
+    "pnpm --filter"
+  ]
 }
